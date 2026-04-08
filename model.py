@@ -41,7 +41,7 @@ def generate_adj_matrix(N, agent_activation_probabilities, agent_opinions, r, m,
             # Calculate weights of agents (numerator of equation 3)
             weights = distances**-beta
 
-            # Agent i does not influence themselves
+            # Agent i does not influence themself
             weights[i] = 0
 
             # Influence probabilities
@@ -55,7 +55,7 @@ def generate_adj_matrix(N, agent_activation_probabilities, agent_opinions, r, m,
                 adjacency_matrix[agent, i] = 1
 
                 # Reciprocal influence
-                if np.random.rand() < 0.5:
+                if np.random.rand() < r:
                     adjacency_matrix[i, agent] = 1
                         
     return(adjacency_matrix)
@@ -66,7 +66,7 @@ def initialize(N, epsilon, gamma):
     # https://en.wikipedia.org/wiki/Cumulative_distribution_function
     # https://en.wikipedia.org/wiki/Inverse_function
     U = np.random.rand(N)
-    activation_probabilities = (U * (1 - epsilon**(1-gamma) + epsilon**(1-gamma)))**(1 / (1 - gamma))
+    activation_probabilities = (U * (1 - epsilon**(1-gamma)) + epsilon**(1-gamma))**(1 / (1 - gamma))
 
     # Initialize agent opinions
     opinions = np.linspace(-1,1,N)
@@ -91,7 +91,6 @@ history = simulate(N, K = 3, r = 0.5, m = 10, beta = 3, alpha = 3, epsilon = 0.0
 
 time_array = np.arange(time_steps + 1) * dt
 plt.plot(time_array, history, alpha=0.3, linewidth=1)
-#plt.xlim(0,0.2)
 
 plt.xlabel('Time Steps')
 plt.ylabel('Agent Opinions')
