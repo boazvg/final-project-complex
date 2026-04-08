@@ -23,8 +23,8 @@ def opinion_change(x_index, K, N, adj_matrix, alpha, agent_opinions):
     total_sum = 0
     for j in range(N):
         total_sum += adj_matrix[x_index, j]*math.tanh(alpha*agent_opinions[j])
-    opinion_change = -x + K*total_sum
-    return(opinion_change)
+    change = -x + K*total_sum
+    return(change)
 
 def generate_adj_matrix(N, agent_activation_probabilities, agent_opinions, r, m, beta):
     # Read this matrix as follows: [i][j] = 1 if agent j influences agent i
@@ -46,6 +46,7 @@ def generate_adj_matrix(N, agent_activation_probabilities, agent_opinions, r, m,
             agents_influened = 0
             while agents_influened <= m:
                 agent_index = random.randint(0, N-1)
+
                 influence_prob = (abs(agent_opinions[i] - agent_opinions[agent_index]) + 1e-9)**-beta / total_sum
 
                 # If agent i succesfully influences agent 'agent_index'
@@ -65,7 +66,7 @@ def initialize(N, epsilon, gamma):
     # https://en.wikipedia.org/wiki/Cumulative_distribution_function
     # https://en.wikipedia.org/wiki/Inverse_function
     U = np.random.rand(N)
-    activation_probabilities = (U * (1 - epsilon**(1-gamma) + epsilon**(1-gamma)))**(1 / (1 - gamma))
+    activation_probabilities = (U * (1 - epsilon**(1-gamma)) + epsilon**(1-gamma))**(1 / (1 - gamma))
 
     # Initialize agent opinions
     opinions = np.linspace(-1,1,N)
@@ -84,7 +85,7 @@ def simulate(N, K, r, m, beta, alpha, epsilon, gamma, time_steps, dt):
 
 N = 100
 time_steps = 1000
-dt = 0.01
+dt = 0.1
 
 history = simulate(N, K = 3, r = 0.5, m = 10, beta = 3, alpha = 3, epsilon = 0.01, gamma = 2.1, time_steps = time_steps, dt = dt)
 
