@@ -54,7 +54,7 @@ def generate_adj_matrix(N, agent_activation_probabilities, agent_opinions, r, m,
                     agents_influened += 1
 
                     # Reciprocal influence
-                    if np.random.rand() < 0.5:
+                    if np.random.rand() < r:
                         adjacency_matrix[i, agent_index] = 1
                         
     return(adjacency_matrix)
@@ -78,18 +78,19 @@ def simulate(N, K, r, m, beta, alpha, epsilon, gamma, time_steps, dt):
     for i in range(time_steps):
         agent_opinions = step(N, agent_activation_probabilities, agent_opinions, r, m, beta, K, alpha, dt)
 
-        history.append(agent_opinions)
+        history.append(agent_opinions.copy())
     
     return np.array(history)
 
 N = 100
 time_steps = 10
-dt = 1
+dt = 0.01
 
 history = simulate(N, K = 3, r = 0.5, m = 10, beta = 3, alpha = 3, epsilon = 0.01, gamma = 2.1, time_steps = time_steps, dt = dt)
 
 plt.plot(history)
 plt.xlabel('Time Steps')
+#plt.xlim(0,5)
 plt.ylabel('Agent Opinions')
 plt.title('Opinion Dynamics Simulation')
 plt.show()
