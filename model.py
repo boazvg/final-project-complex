@@ -83,11 +83,11 @@ def simulate(N, K, r, m, beta, alpha, epsilon, gamma, time_steps, dt):
     
     return np.array(history)
 
-N = 10
-time_steps = 100
+N = 100
+time_steps = 1000
 dt = 0.01
 
-history = simulate(N, K = 3, r = 0.5, m = 3, beta = 3, alpha = 3, epsilon = 0.01, gamma = 2.1, time_steps = time_steps, dt = dt)
+history = simulate(N, K = 3, r = 0.5, m = 10, beta = 3, alpha = 3, epsilon = 0.01, gamma = 2.1, time_steps = time_steps, dt = dt)
 
 time_array = np.arange(time_steps + 1) * dt
 plt.plot(time_array, history, alpha=0.3, linewidth=1)
