@@ -5,26 +5,22 @@ import math
 import matplotlib.pyplot as plt
 
 def step(N, agent_activation_probabilities, agent_opinions, r, m, beta, K, alpha, dt):
-    dx_dt = np.zeros(N)
+    # Calculate adjacency matrix based on current opinions and activation probabilities
     adj_matrix = generate_adj_matrix(N, agent_activation_probabilities, agent_opinions, r, m, beta)
+    
+    # Create new array with opinions after applying tanh function
+    opinions_tanh = np.tanh(alpha * agent_opinions)
 
-    # Calculate opinion changes
-    for i in range(N):
-        dx_dt[i] = opinion_change(i, K, N, adj_matrix, alpha, agent_opinions)
+    # Calculate total sums for each agent using matrix multiplication, summation part of equation 1
+    total_sums = adj_matrix @ opinions_tanh
+
+    # Calculate opnion changes, complete equation 1
+    opinion_changes = -agent_opinions + K * total_sums
 
     # Update opinions
-    for i in range(N):
-        agent_opinions[i] += dt*dx_dt[i]
-    
-    return(agent_opinions)
+    agent_opinions += dt * opinion_changes
 
-def opinion_change(x_index, K, N, adj_matrix, alpha, agent_opinions):
-    x = agent_opinions[x_index]
-    total_sum = 0
-    for j in range(N):
-        total_sum += adj_matrix[x_index, j]*math.tanh(alpha*agent_opinions[j])
-    opinion_change = -x + K*total_sum
-    return(opinion_change)
+    return agent_opinions
 
 def generate_adj_matrix(N, agent_activation_probabilities, agent_opinions, r, m, beta):
     # Read this matrix as follows: [i][j] = 1 if agent j influences agent i
@@ -87,7 +83,7 @@ N = 100
 time_steps = 1000
 dt = 0.01
 
-history = simulate(N, K = 3, r = 0.5, m = 10, beta = 3, alpha = 3, epsilon = 0.01, gamma = 2.1, time_steps = time_steps, dt = dt)
+history = simulate(N, K = 3, r = 0.5, m = 10, beta = 0, alpha = 3, epsilon = 0.01, gamma = 2.1, time_steps = time_steps, dt = dt)
 
 time_array = np.arange(time_steps + 1) * dt
 plt.plot(time_array, history, alpha=0.3, linewidth=1)
