@@ -2,67 +2,97 @@
 import numpy as np
 import random
 import math
+import matplotlib.pyplot as plt
 
-def step(N, y, epsilon, m, agents, beta, K, a, dt):
+def step(N, agent_activation_probabilities, agent_opinions, r, m, beta, K, alpha, dt):
     dx_dt = np.zeros(N)
-    adj_matrix = generate_adj_matrix(N, y, epsilon, m, agents, beta)
-    for i in range(N):
-        dx_dt[i] = function_1(i, K, N, adj_matrix, a, agents)
-    for i in range(N):
-        agents[i] += dt*dx_dt[i]
-    return(agents)
+    adj_matrix = generate_adj_matrix(N, agent_activation_probabilities, agent_opinions, r, m, beta)
 
-def function_1(x_index, K, N,  adj_matrix, a, agents):
-    x = agents[x_index]
+    # Calculate opinion changes
+    for i in range(N):
+        dx_dt[i] = opinion_change(i, K, N, adj_matrix, alpha, agent_opinions)
+
+    # Update opinions
+    for i in range(N):
+        agent_opinions[i] += dt*dx_dt[i]
+    
+    return(agent_opinions)
+
+def opinion_change(x_index, K, N, adj_matrix, alpha, agent_opinions):
+    x = agent_opinions[x_index]
     total_sum = 0
     for j in range(N):
-        total_sum += adj_matrix[x_index, j]*math.tanh(a*agents[j])
-    result = -x + K*total_sum
-    return(result)
+        total_sum += adj_matrix[x_index, j]*math.tanh(alpha*agent_opinions[j])
+    opinion_change = -x + K*total_sum
+    return(opinion_change)
 
-def generate_adj_matrix(N, y, epsilon, m, agents, beta):
+def generate_adj_matrix(N, agent_activation_probabilities, agent_opinions, r, m, beta):
+    # Read this matrix as follows: [i][j] = 1 if agent j influences agent i
     adjacency_matrix = np.zeros((N,N))
-    probs = np.zeros(N)
+
+    activation_randoms = np.random.rand(N)
+    
     for i in range(N):
-        probs[i] = random.uniform(epsilon, 1)
-    for i in range(N):
-        a = probs[i]
-        actual_prob = (1 - y) / (1 - epsilon**(1-y)) * a**(-y)
-        r = np.random.rand()
         # If the agent is active
-        if (actual_prob > r):
-            # Calculate denominator of equation 3
+        if activation_randoms[i] < agent_activation_probabilities[i]:
+            # Calculate denominator of equation 3 TODO: NP OPTIMIZE
             total_sum = 0
             for j in range(N):
+                # Not necessary
                 if j == i:
                     continue
-                total_sum += abs(agents[i] - agents[j])**-beta
+                total_sum += abs(agent_opinions[i] - agent_opinions[j])**-beta
+
             agents_influened = 0
             while agents_influened <= m:
                 agent_index = random.randint(0, N-1)
-                influence_prob = abs(agents[i] - agents[agent_index])**-beta / total_sum
+                influence_prob = abs(agent_opinions[i] - agent_opinions[agent_index])**-beta / total_sum
 
                 # If agent i succesfully influences agent 'agent_index'
-                if influence_prob > np.random.rand():
+                if np.random.rand() < influence_prob:
                     adjacency_matrix[agent_index, i] = 1
                     agents_influened += 1
+
+                    # Reciprocal influence
+                    if np.random.rand() < 0.5:
+                        adjacency_matrix[i, agent_index] = 1
+                        
     return(adjacency_matrix)
 
-def initialize(N):
-    agents = np.zeros(N)
-    for i in range(N):
-        agents[i] = random.uniform(-1,1)
-    return(agents)
+def initialize(N, epsilon, gamma):
+    # Calculate agent activation probabilities using inverse transform sampling
+    # https://en.wikipedia.org/wiki/Inverse_transform_sampling
+    # https://en.wikipedia.org/wiki/Cumulative_distribution_function
+    # https://en.wikipedia.org/wiki/Inverse_function
+    U = np.random.rand(N)
+    activation_probabilities = (U * (1 - epsilon**(1-gamma) + epsilon**(1-gamma)))**(1 / (1 - gamma))
 
-def simulate(N, K, a, epsilon, m, beta, y, time):
-    agents = initialize(N)
-    agents_copy = agents.copy()
-    for i in range(time):
-        agents = step(N, y, epsilon, m, agents, beta, K, a, 0.01)
-        print(f"{agents[0]} {agents[1]} {agents[2]} {agents[3]} {agents[4]}")
-        print("----------------------------------------------------")
-    print(f"starting values: {agents_copy[0]} {agents_copy[1]} {agents_copy[2]} {agents_copy[3]} {agents_copy[4]}")
-    print(f"ending values: {agents[0]} {agents[1]} {agents[2]} {agents[3]} {agents[4]}")
+    # Initialize agent opinions
+    opinions = np.linspace(-1,1,N)
+    return activation_probabilities, opinions
+
+def simulate(N, K, r, m, beta, alpha, epsilon, gamma, time_steps, dt):
+    agent_activation_probabilities, agent_opinions = initialize(N, epsilon, gamma)
+
+    history = [agent_opinions.copy()]
+    for i in range(time_steps):
+        agent_opinions = step(N, agent_activation_probabilities, agent_opinions, r, m, beta, K, alpha, dt)
+
+        history.append(agent_opinions)
+    
+    return np.array(history)
+
+N = 100
+time_steps = 10
+dt = 1
+
+history = simulate(N, K = 3, r = 0.5, m = 10, beta = 3, alpha = 3, epsilon = 0.01, gamma = 2.1, time_steps = time_steps, dt = dt)
+
+plt.plot(history)
+plt.xlabel('Time Steps')
+plt.ylabel('Agent Opinions')
+plt.title('Opinion Dynamics Simulation')
+plt.show()
+# plt.figure(figsize=(10, 6))
 
 
-simulate(100, 3, 3, 0.01, 10, 3, 2.1, 200)
