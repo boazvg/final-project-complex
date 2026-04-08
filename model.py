@@ -41,7 +41,7 @@ def generate_adj_matrix(N, agent_activation_probabilities, agent_opinions, r, m,
                 # Not necessary
                 if j == i:
                     continue
-                total_sum += abs(agent_opinions[i] - agent_opinions[j])**-beta
+                total_sum += (abs(agent_opinions[i] - agent_opinions[j]) + 1e-9)**-beta
 
             agents_influened = 0
             while agents_influened <= m:
