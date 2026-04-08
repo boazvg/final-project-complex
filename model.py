@@ -46,7 +46,7 @@ def generate_adj_matrix(N, agent_activation_probabilities, agent_opinions, r, m,
             agents_influened = 0
             while agents_influened <= m:
                 agent_index = random.randint(0, N-1)
-                influence_prob = abs(agent_opinions[i] - agent_opinions[agent_index])**-beta / total_sum
+                influence_prob = (abs(agent_opinions[i] - agent_opinions[agent_index]) + 1e-9)**-beta / total_sum
 
                 # If agent i succesfully influences agent 'agent_index'
                 if np.random.rand() < influence_prob:
@@ -83,12 +83,13 @@ def simulate(N, K, r, m, beta, alpha, epsilon, gamma, time_steps, dt):
     return np.array(history)
 
 N = 100
-time_steps = 10
+time_steps = 1000
 dt = 0.01
 
 history = simulate(N, K = 3, r = 0.5, m = 10, beta = 3, alpha = 3, epsilon = 0.01, gamma = 2.1, time_steps = time_steps, dt = dt)
 
-plt.plot(history)
+time_array = np.arange(time_steps + 1) * dt
+plt.plot(time_array, history, alpha=0.3, linewidth=1)
 plt.xlabel('Time Steps')
 #plt.xlim(0,5)
 plt.ylabel('Agent Opinions')
