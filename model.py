@@ -79,7 +79,7 @@ def simulate(N, K, r, m, beta, alpha, epsilon, gamma, time_steps, dt):
     for i in range(time_steps):
         agent_opinions = step(N, agent_activation_probabilities, agent_opinions, r, m, beta, K, alpha, dt)
         
-        history.append(agent_opinions)
+        history.append(agent_opinions.copy())
     
     return np.array(history)
 
@@ -91,7 +91,7 @@ history = simulate(N, K = 3, r = 0.5, m = 3, beta = 3, alpha = 3, epsilon = 0.01
 
 time_array = np.arange(time_steps + 1) * dt
 plt.plot(time_array, history, alpha=0.3, linewidth=1)
-plt.xlim(0,0.2)
+#plt.xlim(0,0.2)
 
 plt.xlabel('Time Steps')
 plt.ylabel('Agent Opinions')
